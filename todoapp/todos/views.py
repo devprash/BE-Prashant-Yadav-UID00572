@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 
-from .serializers import TodoSerializer, TodoUpdateSerializer
 from .models import Todo
+from .serializers import TodoSerializer, TodoUpdateSerializer
 
 
 class TodoAPIViewSet(ModelViewSet):
@@ -22,6 +22,7 @@ class TodoAPIViewSet(ModelViewSet):
           }
         ]
     """
+
     def get_serializer_class(self):
         if self.action == 'create':
             return TodoSerializer
@@ -48,4 +49,4 @@ class TodoAPIViewSet(ModelViewSet):
         if user_id:
             return Todo.objects.filter(user__id=user_id)
         return Todo.objects.all()
-                                                  
+    
