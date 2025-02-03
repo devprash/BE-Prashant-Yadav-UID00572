@@ -70,3 +70,4 @@ class TodoUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Todo
         fields = ['task_name', 'done']
+        

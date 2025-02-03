@@ -22,6 +22,7 @@ class TodoAPIViewSet(ModelViewSet):
           }
         ]
     """
+
     def get_serializer_class(self):
         if self.action == 'create':
             return TodoSerializer
@@ -48,3 +49,4 @@ class TodoAPIViewSet(ModelViewSet):
         if user_id:
             return Todo.objects.filter(user__id=user_id)
         return Todo.objects.all()
+    
