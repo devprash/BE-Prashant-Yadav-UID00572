@@ -6,7 +6,6 @@ from users.models import CustomUser
 from users.serializers import UserSerializerWithoutIdField
 
 
-
 class TopFiveWithPendingTodoSerializer(serializers.ModelSerializer):
     pending_count = serializers.IntegerField()
 
@@ -36,7 +35,7 @@ class TodoDateRangeSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'creator', 'email', 'created_at', 'status']
 
 
-class TodoSerializer(serializers.ModelSerializer):
+class TodoSerializerForAllTodos(serializers.ModelSerializer):
     creator = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(
@@ -52,3 +51,22 @@ class TodoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Todo
         fields = ['id', 'name', 'status', 'created_at', 'creator']
+
+
+class TodoSerializer(serializers.ModelSerializer):
+    task_name = serializers.CharField(source="name")
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(), source="user")
+
+    class Meta:
+        model = Todo
+        fields = ['user_id', 'task_name', 'done',
+                  'date_created']
+
+
+class TodoUpdateSerializer(serializers.ModelSerializer):
+    task_name = serializers.CharField(source="name")
+
+    class Meta:
+        model = Todo
+        fields = ['task_name', 'done']
