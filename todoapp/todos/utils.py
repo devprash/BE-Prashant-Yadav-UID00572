@@ -401,15 +401,15 @@ def fetch_user_wise_project_status():
     users = user_models.CustomUser.objects.annotate(
         to_do_projects=ArrayAgg(
             'projectmember__project__name',
-            filter=Q(projectmember__project__status=0)
+            filter=Q(projectmember__project__status=project_models.Project.Status.STATUS_TO_BE_STARTED)
         ),
         in_progress_projects=ArrayAgg(
             'projectmember__project__name',
-            filter=Q(projectmember__project__status=1)
+            filter=Q(projectmember__project__status=project_models.Project.Status.STATUS_IN_PROGRESS)
         ),
         completed_projects=ArrayAgg(
             'projectmember__project__name',
-            filter=Q(projectmember__project__status=2)
+            filter=Q(projectmember__project__status=project_models.Project.Status.STATUS_COMPLETED)
         )
     )
     serializer = user_serializers.UserProjectSerializer(users, many=True)
