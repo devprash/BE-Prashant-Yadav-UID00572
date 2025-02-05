@@ -36,5 +36,8 @@ class UserProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = user_models.CustomUser
-        fields = ["first_name", "last_name", "email",
-                  "to_do_projects", "in_progress_projects", "completed_projects"]
+        fields = [
+            "first_name", "last_name", "email",
+            "to_do_projects", "in_progress_projects",
+            "completed_projects"
+        ]

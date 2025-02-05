@@ -45,7 +45,7 @@ def fetch_all_users():
     users = user_models.CustomUser.objects.all()
     serializer = user_serializers.UserSerializer(users, many=True)
 
-    return serializer.data
+    return json.loads(json.dumps(serializer.data))
 
 
 # Add code to this util to  return all todos list (done/to do) along with user details in specified format.
@@ -81,7 +81,7 @@ def fetch_all_todo_list_with_user_details():
     todos = todo_models.Todo.objects.select_related('user').all()
     serializer = todo_serializers.TodoSerializer(todos, many=True)
 
-    return serializer.data
+    return json.loads(json.dumps(serializer.data))
 
 
 # Add code to this util to return all projects with following details in specified format.
@@ -183,7 +183,9 @@ def fetch_five_users_with_max_pending_todos():
         pending_count=Count('todo', filter=Q(todo__done=False))
     ).order_by("-pending_count")[:5]
     serialized_data = todo_serializers.TopFiveWithPendingTodoSerializer(
-        top_five_user, many=True)
+        top_five_user,
+        many=True
+    )
 
     return json.loads(json.dumps(serialized_data.data))
 
@@ -223,7 +225,9 @@ def fetch_users_with_n_pending_todos(n):
         )
     ).filter(pending_count=n)
     serialized_data = todo_serializers.TopFiveWithPendingTodoSerializer(
-        users, many=True)
+        users,
+        many=True
+    )
 
     return json.loads(json.dumps(serialized_data.data))
 
@@ -287,8 +291,8 @@ def fetch_project_with_member_name_start_or_end_with_a():
     :return: list of dicts - List of project data
     """
     projects = project_models.Project.objects.filter(
-        Q(members__first_name__istartswith='A') | Q(
-            members__last_name__iendswith='A')
+        Q(members__first_name__istartswith='A')
+        |  Q(members__last_name__iendswith='A')
     ).distinct()
     serializer = project_serializers.ProjectWithMemberName(projects, many=True)
 
@@ -364,7 +368,9 @@ def fetch_project_wise_report():
         members_prefetch
     )
     serialized_data = project_serializers.ProjectReportSerializer(
-        project_data, many=True)
+        project_data,
+        many=True
+    )
 
     return json.loads(json.dumps(serialized_data.data))
 
