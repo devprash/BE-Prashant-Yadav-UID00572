@@ -12,19 +12,17 @@ class Project(models.Model):
 
         Add string representation for this model with project name.
     """
-    STATUS_TO_BE_STARTED = 0
-    STATUS_IN_PROGRESS = 1
-    STATUS_COMPLETED = 2
-
-    CHOICES = [
-        (STATUS_TO_BE_STARTED, "To be started"),
-        (STATUS_IN_PROGRESS, "In Progress"),
-        (STATUS_COMPLETED, "Completed")
-    ]
+    class Status(models.IntegerChoices):
+        STATUS_TO_BE_STARTED = 0, "To be started"
+        STATUS_IN_PROGRESS = 1, "In progress"
+        STATUS_COMPLETED = 2, "Completed"
 
     name = models.CharField(max_length=100)
     max_members = models.PositiveIntegerField()
-    status = models.IntegerField(choices=CHOICES, default=STATUS_TO_BE_STARTED)
+    status = models.IntegerField(
+        choices=Status.choices,
+        default=Status.STATUS_TO_BE_STARTED
+    )
     members = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         through='ProjectMember',
@@ -44,13 +42,17 @@ class ProjectMember(models.Model):
 
     Add string representation for this model with project name and user email/first name.
     """
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE
+    )
     member = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
 
     class Meta:
         unique_together = ('project', 'member')
 
     def __str__(self):
         return f"{self.project.name} - {self.member.first_name}"
-    
