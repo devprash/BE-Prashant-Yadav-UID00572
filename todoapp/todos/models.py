@@ -16,20 +16,24 @@ class Todo(models.Model):
 
         Add string representation for this model with todos name.
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
     name = models.CharField(max_length=1000)
     done = models.BooleanField(default=False)
     date_created = models.DateTimeField(default=now)
-    date_completed = models.DateTimeField(null=True, blank=True)
+    date_completed = models.DateTimeField(
+        null=True,
+        blank=True
+    )
 
     def save(self, *args, **kwargs):
-        if self.done and self.date_completed is None:
+        if self.done and not self.date_completed:
             self.date_completed = now()
-        elif not self.done:
+        elif not self.done and self.date_completed:
             self.date_completed = None
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
-    
