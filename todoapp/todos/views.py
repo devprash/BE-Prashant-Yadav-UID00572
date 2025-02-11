@@ -1,7 +1,9 @@
 from rest_framework.viewsets import ModelViewSet
 
-from .serializers import TodoSerializerForAPI, TodoUpdateSerializer
-from .models import Todo
+from todos import (
+    models as todo_models,
+    serializers as todo_serializers
+)
 
 
 class TodoAPIViewSet(ModelViewSet):
@@ -24,29 +26,18 @@ class TodoAPIViewSet(ModelViewSet):
     """
 
     def get_serializer_class(self):
+        serializer = None
         if self.action == 'create':
-            return TodoSerializerForAPI
-        elif self.action == 'update' or self.action == 'retrieve':
-            return TodoUpdateSerializer
-        return TodoSerializerForAPI
-
-    def perform_update(self, serializer):
-        todo_instance = self.get_object()
-        todo_data = self.request.data
-        todo = todo_data.get('task_name')
-        done = todo_data.get('done')
-
-        if todo:
-            todo_instance.name = todo
-        if done is not None:
-            todo_instance.done = done
-
-        todo_instance.save()
-        serializer.save()
+            serializer = todo_serializers.TodoSerializerForAPI
+        else:
+            serializer = todo_serializers.TodoUpdateSerializer
+        return serializer
 
     def get_queryset(self):
+        queryset = None
         user_id = self.request.query_params.get('user_id')
-        if user_id:
-            return Todo.objects.filter(user__id=user_id)
-        return Todo.objects.all()
-    
+        if user_id is not None:
+            queryset = todo_models.Todo.objects.filter(user__id=user_id)
+        else:
+            queryset = todo_models.Todo.objects.all()
+        return queryset
