@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from todos import (
@@ -55,18 +54,21 @@ class TodoSerializer(serializers.ModelSerializer):
 
 class TodoSerializerForAPI(serializers.ModelSerializer):
     task_name = serializers.CharField(source="name")
-    user_id = serializers.PrimaryKeyRelatedField(
-        queryset=user_models.CustomUser.objects.all(), source="user", write_only=True)
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['user'] = user
+        return super().create(validated_data)
 
     class Meta:
         model = todo_models.Todo
-        fields = ['user_id', 'task_name', 'done',
+        fields = ['task_name', 'done',
                   'date_created']
 
 
 class TodoUpdateSerializer(serializers.ModelSerializer):
     task_name = serializers.CharField(source="name")
-    todo_id = serializers.IntegerField(source='id')
+    todo_id = serializers.IntegerField(source='id', read_only=True)
 
     class Meta:
         model = todo_models.Todo
