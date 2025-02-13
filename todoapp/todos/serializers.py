@@ -51,3 +51,23 @@ class TodoSerializer(serializers.ModelSerializer):
     class Meta:
         model = todo_models.Todo
         fields = ['id', 'name', 'status', 'created_at', 'creator']
+
+
+class TodoSerializerForAPI(serializers.ModelSerializer):
+    task_name = serializers.CharField(source="name")
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset=user_models.CustomUser.objects.all(), source="user", write_only=True)
+
+    class Meta:
+        model = todo_models.Todo
+        fields = ['user_id', 'task_name', 'done',
+                  'date_created']
+
+
+class TodoUpdateSerializer(serializers.ModelSerializer):
+    task_name = serializers.CharField(source="name")
+    todo_id = serializers.IntegerField(source='id')
+
+    class Meta:
+        model = todo_models.Todo
+        fields = ['todo_id', 'task_name', 'done']
