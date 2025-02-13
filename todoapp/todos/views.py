@@ -31,6 +31,7 @@ class TodoAPIViewSet(ModelViewSet):
             serializer = todo_serializers.TodoSerializerForAPI
         else:
             serializer = todo_serializers.TodoUpdateSerializer
+
         return serializer
 
     def get_queryset(self):
@@ -40,4 +41,5 @@ class TodoAPIViewSet(ModelViewSet):
             queryset = todo_models.Todo.objects.filter(user__id=user_id)
         else:
             queryset = todo_models.Todo.objects.all()
+            
         return queryset
