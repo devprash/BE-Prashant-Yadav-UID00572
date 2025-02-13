@@ -46,11 +46,13 @@ class UserProjectSerializer(serializers.ModelSerializer):
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     email = serializers.EmailField(required=True)
+    confirm_password = serializers.CharField(write_only=True)
 
     class Meta:
         model = user_models.CustomUser
-        fields = ['email', 'password', 'first_name',
-                  'last_name', 'date_joined']
+        fields = [
+            'email', 'password', 'confirm_password', 'first_name', 'last_name', 'date_joined'
+        ]
         read_only_fields = ['date_joined']
 
     def validate_email(self, value):
@@ -59,6 +61,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 "A user with this email already exists."
             )
         return value
+
+    def validate(self, validated_data):
+        if validated_data['password'] != validated_data['confirm_password']:
+            raise serializers.ValidationError('Passwords doesnot match!')
+
+        return validated_data
 
     def create(self, validated_data):
         user = user_models.CustomUser.objects.create_user(
