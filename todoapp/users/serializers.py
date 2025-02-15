@@ -44,32 +44,26 @@ class UserProjectSerializer(serializers.ModelSerializer):
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, required=True)
     email = serializers.EmailField(required=True)
+    token = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = user_models.CustomUser
         fields = ['email', 'password', 'first_name',
-                  'last_name', 'date_joined']
+                  'last_name', 'date_joined', 'token']
         read_only_fields = ['date_joined']
 
-    def validate_email(self, value):
-        if user_models.CustomUser.objects.filter(email=value).exists():
-            raise serializers.ValidationError(
-                "A user with this email already exists."
-            )
-        return value
-
     def create(self, validated_data):
-        user = user_models.CustomUser.objects.create_user(
-            password=validated_data['password'],
-            email=validated_data['email'],
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', '')
-        )
+        user = user_models.CustomUser.objects.create_user(**validated_data)
+        Token.objects.create(user=user)
         return user
+
+    def get_token(self, instance):
+        token, _ = Token.objects.get_or_create(user=instance)
+        return token.key
 
 
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
-    password = serializers.CharField(write_only=True, required=True)
+    password = serializers.CharField(required=True)

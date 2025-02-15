@@ -2,14 +2,16 @@ from django.contrib.auth import authenticate
 
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from users import serializers as user_serializers
+from users import (
+    serializers as user_serializers
+)
 
 
-class UserRegistrationAPIView(APIView):
+class UserRegistrationAPIView(CreateAPIView):
     """
         success response format
          {
@@ -21,24 +23,10 @@ class UserRegistrationAPIView(APIView):
          }
     """
     permission_classes = [AllowAny]
-
-    def post(self, request, *args, **kwargs):
-        serializer = user_serializers.UserRegistrationSerializer(
-            data=request.data)
-
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        user = serializer.save()
-        token, _ = Token.objects.get_or_create(user=user)
-
-        response_data = serializer.data
-        response_data['token'] = token.key
-
-        return Response(response_data, status=status.HTTP_201_CREATED)
+    serializer_class = user_serializers.UserRegistrationSerializer
 
 
-class UserLoginAPIView(APIView):
+class UserLoginAPIView(CreateAPIView):
     """
         success response format
          {
@@ -46,19 +34,17 @@ class UserLoginAPIView(APIView):
          }
     """
     permission_classes = [AllowAny]
+    serializer_class = user_serializers.UserLoginSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = user_serializers.UserLoginSerializer(data=request.data)
-
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
         user = authenticate(username=email, password=password)
-
         if user is None:
             return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
         token, created = Token.objects.get_or_create(user=user)
-        return Response({'auth-token': token.key}, status=status.HTTP_200_OK)
+
+        return Response({'auth_token': token.key}, status=status.HTTP_200_OK)
