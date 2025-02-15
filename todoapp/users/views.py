@@ -22,7 +22,6 @@ class UserRegistrationAPIView(CreateAPIView):
            "token"
          }
     """
-    permission_classes = [AllowAny]
     serializer_class = user_serializers.UserRegistrationSerializer
 
 
@@ -33,7 +32,6 @@ class UserLoginAPIView(CreateAPIView):
            auth_token: ""
          }
     """
-    permission_classes = [AllowAny]
     serializer_class = user_serializers.UserLoginSerializer
 
     def post(self, request, *args, **kwargs):
