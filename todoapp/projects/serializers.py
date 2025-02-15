@@ -9,6 +9,7 @@ from users import (
     models as user_models
 )
 
+from django.db import connection
 
 class ProjectWithMemberName(serializers.ModelSerializer):
     done = serializers.SerializerMethodField()
@@ -56,14 +57,21 @@ class ProjectReportSerializer(serializers.ModelSerializer):
 
 class ProjectMemberSerializer(serializers.Serializer):
     user_ids = serializers.ListField(child=serializers.IntegerField())
+    action = serializers.CharField()
 
     class Meta:
-        fields = ['user_ids']
+        fields = ['user_ids', 'action']
+
+    def validate_action(self, value):
+        if value not in ['add', 'remove']:
+            raise serializers.ValidationError(
+                'Action should either be add or remove.')
+        return value
 
     def validate(self, validated_data):
         user_ids = validated_data['user_ids']
         project_id = self.context['project_id']
-        action = self.context['action']
+        action = validated_data['action']
         project = project_models.Project.objects.get(id=project_id)
         logs = {}
         invalid_users = set(
@@ -119,22 +127,23 @@ class ProjectMemberSerializer(serializers.Serializer):
 
         return validated_data
 
-    def create(self, validated_data):
-        user_ids = self.context['valid_users']
+    def save(self):
         project_id = self.context['project_id']
         project = project_models.Project.objects.get(id=project_id)
-        new_members = [
-            project_models.ProjectMember(project=project, member_id=user_id)
-            for user_id in user_ids
-        ]
-        project_models.ProjectMember.objects.bulk_create(new_members)
+        valid_users = self.context['valid_users']
+        action = self.validated_data['action']
+        logs = self.context['logs']
 
-        return {'logs': self.context['logs']}
-
-    def delete(self, validated_data):
-        user_ids = self.context['valid_users']
-        project_id = self.context['project_id']
-        project_models.ProjectMember.objects.filter(
-            project_id=project_id, member_id__in=user_ids).delete()
-
-        return {'logs': self.context['logs']}
+        if action == 'add':
+            new_members = [
+                project_models.ProjectMember(
+                    project=project, member_id=user_id)
+                for user_id in valid_users
+            ]
+            project_models.ProjectMember.objects.bulk_create(new_members)
+        elif action == 'remove':
+            project_models.ProjectMember.objects.filter(
+                member_id__in=valid_users).delete()
+            
+        print(f'\n LINE148: Connection Queries: {len(connection.queries)}  \n')
+        return {'logs': logs}
