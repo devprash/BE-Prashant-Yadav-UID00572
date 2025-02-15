@@ -50,8 +50,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = user_models.CustomUser
-        fields = ['email', 'password', 'first_name',
-                  'last_name', 'date_joined', 'token']
+        fields = [
+            'email', 'password', 'first_name', 'last_name', 'date_joined', 'token'
+        ]
         read_only_fields = ['date_joined']
 
     def create(self, validated_data):
